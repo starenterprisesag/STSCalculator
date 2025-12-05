@@ -227,12 +227,11 @@
         el.addEventListener("blur", () => formatInput(el));
       });
 
-      function parseInput(id) {
-  const raw = document.getElementById(id).value;
-  // Entfernt alle Nicht-Ziffern (inkl. typografischem Apostroph 1’000’000)
-  const cleaned = raw.replace(/[^0-9]/g, "");
-  const num = parseFloat(cleaned);
+     function parseInput(id) {
+  const val = document.getElementById(id).value.replace(/'/g, "").replace(/\s+/g, "");
+  const num = parseFloat(val);
   return isNaN(num) ? 0 : num;
+}
 }
       }
 
@@ -289,6 +288,7 @@
   </script>
 </body>
 </html>
+
 
 
 
