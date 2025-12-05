@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>STS Prämienrechner Kundengeldabsicherung</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 1rem;
+    }
+    .container {
+      max-width: 540px;
+      margin: 2rem auto;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 1.5rem 1.75rem 1.75rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      border: 1px solid #e0e0e0;
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    h1 {
+      font-size: 1.25rem;
+      margin: 0 0 0.3rem 0;
+      color: #222;
+    }
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #444;
+    }
+    .lang-switch {
+      text-align: right;
+      white-space: nowrap;
+    }
+    .lang-btn {
+      border: 1px solid #c0c0c0;
+      background: #ffffff;
+      color: #333;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      cursor: pointer;
+      margin-left: 0.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .lang-btn span.flag {
+      font-size: 1rem;
+    }
+    .lang-btn.active {
+      background: #005a9c;
+      color: #ffffff;
+      border-color: #005a9c;
+    }
+    .field {
+      margin-top: 0.9rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+      font-size: 0.9rem;
+      color: #222;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.45rem 0.55rem;
+      font-size: 0.95rem;
+      border-radius: 4px;
+      border: 1px solid #c5c5c5;
+      box-sizing: border-box;
+    }
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #005a9c;
+      box-shadow: 0 0 0 1px rgba(0,90,156,0.2);
+    }
+    .button-row {
+      margin-top: 1.1rem;
+    }
+    #sts-calc-button {
+      padding: 0.6rem 1.4rem;
+      font-size: 0.95rem;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      background: #005a9c;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    #sts-calc-button:hover {
+      opacity: 0.92;
+    }
+    .result {
+      margin-top: 1rem;
+      font-weight: 600;
+      min-height: 1.5rem;
+      color: #222;
+    }
+    .hint {
+      margin-top: 0.6rem;
+      font-size: 0.78rem;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-row">
+      <div>
+        <h1 id="title">STS Prämienrechner Kundengeldabsicherung</h1>
+        <p id="subtitle">
+          Bitte geben Sie Ihre Jahresumsätze in CHF ein. Die Berechnung erfolgt ohne Gewähr.
+        </p>
+      </div>
+      <div class="lang-switch">
+        <button id="lang-de" class="lang-btn active">
+          <span class="flag">🇩🇪</span><span>DE</span>
+        </button>
+        <button id="lang-fr" class="lang-btn">
+          <span class="flag">🇫🇷</span><span>FR</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="label-retail" for="retailUmsatz">Retail-Umsatz (CHF/Jahr)</label>
+      <input type="number" id="retailUmsatz" min="0" step="1" />
+    </div>
+
+    <div class="field">
+      <label id="label-to" for="toUmsatz">Tour-Operator-Umsatz (CHF/Jahr)</label>
+      <input type="number" id="toUmsatz" min="0" step="1" />
+    </div>
+
+    <div class="field">
+      <label id="label-bsp" for="bspUmsatz">BSP-Umsatz (CHF/Jahr)</label>
+      <input type="number" id="bspUmsatz" min="0" step="1" />
+    </div>
+
+    <div class="button-row">
+      <button id="sts-calc-button" type="button">Prämie berechnen</button>
+    </div>
+
+    <div id="sts-premium-result" class="result"></div>
+    <div id="hint" class="hint">
+      Formel: 0.05% Retail, 0.1% Tour Operator, 0.03% BSP; je Umsatzart mit Mindestprämien.
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      const texts = {
+        de: {
+          title: "STS Prämienrechner Kundengeldabsicherung",
+          subtitle: "Bitte geben Sie Ihre Jahresumsätze in CHF ein. Die Berechnung erfolgt ohne Gewähr.",
+          retail: "Retail-Umsatz (CHF/Jahr)",
+          to: "Tour-Operator-Umsatz (CHF/Jahr)",
+          bsp: "BSP-Umsatz (CHF/Jahr)",
+          calc: "Prämie berechnen",
+          error: "Bitte geben Sie mindestens einen Umsatz ein.",
+          result: (p) => "Ihre Jahresprämie beträgt: CHF " + p,
+          hint: "Formel: 0.05% Retail, 0.1% Tour Operator, 0.03% BSP; je Umsatzart mit Mindestprämien (Retail-Basis 780 CHF, TO 200 CHF, BSP 90 CHF)."
+        },
+        fr: {
+          title: "Calculateur de prime STS Garantie des fonds clients",
+          subtitle: "Veuillez saisir vos chiffres d’affaires annuels en CHF. Calcul sans garantie.",
+          retail: "Chiffre d’affaires Retail (CHF/an)",
+          to: "Chiffre d’affaires Tour-Operator (CHF/an)",
+          bsp: "Chiffre d’affaires BSP (CHF/an)",
+          calc: "Calculer la prime",
+          error: "Veuillez saisir au moins un chiffre d’affaires.",
+          result: (p) => "Votre prime annuelle est: CHF " + p,
+          hint: "Formule : 0,05% Retail, 0,1% Tour Operator, 0,03% BSP ; avec prime minimale par type de chiffre d’affaires (base Retail 780 CHF, TO 200 CHF, BSP 90 CHF)."
+        }
+      };
+
+      let currentLang = "de";
+
+      function updateLanguage(lang) {
+        currentLang = lang;
+        const t = texts[lang];
+
+        document.getElementById("title").textContent = t.title;
+        document.getElementById("subtitle").textContent = t.subtitle;
+        document.getElementById("label-retail").textContent = t.retail;
+        document.getElementById("label-to").textContent = t.to;
+        document.getElementById("label-bsp").textContent = t.bsp;
+        document.getElementById("sts-calc-button").textContent = t.calc;
+        document.getElementById("hint").textContent = t.hint;
+
+        // Button-Styles updaten
+        document.getElementById("lang-de").classList.toggle("active", lang === "de");
+        document.getElementById("lang-fr").classList.toggle("active", lang === "fr");
+      }
+
+      document.getElementById("lang-de").addEventListener("click", function () {
+        updateLanguage("de");
+      });
+      document.getElementById("lang-fr").addEventListener("click", function () {
+        updateLanguage("fr");
+      });
+
+      // Standard: Deutsch
+      updateLanguage("de");
+
+      var button = document.getElementById("sts-calc-button");
+      var resultEl = document.getElementById("sts-premium-result");
+
+      button.addEventListener("click", function () {
+        var retail = parseFloat(document.getElementById("retailUmsatz").value) || 0;
+        var to     = parseFloat(document.getElementById("toUmsatz").value) || 0;
+        var bsp    = parseFloat(document.getElementById("bspUmsatz").value) || 0;
+
+        if (retail === 0 && to === 0 && bsp === 0) {
+          resultEl.textContent = texts[currentLang].error;
+          return;
+        }
+
+        var stepPremium = 0;
+
+        // 1. Retail-Beitrag: max(780, 0.05% * Retail), falls Retail > 0
+        if (retail > 0) {
+          var retailVar = retail * 0.0005; // 0.05%
+          stepPremium += Math.max(780, retailVar);
+        }
+
+        // 2. TO-Beitrag: max(200, 0.1% * TO), falls TO > 0
+        if (to > 0) {
+          var toVar = to * 0.001; // 0.1%
+          stepPremium += Math.max(200, toVar);
+        }
+
+        // 3. BSP-Beitrag: max(90, 0.03% * BSP), falls BSP > 0
+        if (bsp > 0) {
+          var bspVar = bsp * 0.0003; // 0.03%
+          stepPremium += Math.max(90, bspVar);
+        }
+
+        // 4. Gesamt-Mindestprämie (Retail-Basis immer, sobald irgendein Umsatz; TO/BSP-Zuschläge)
+        var minPremium = 0;
+        if (retail > 0 || to > 0 || bsp > 0) {
+          minPremium += 780; // Basis-Retail
+        }
+        if (to > 0) {
+          minPremium += 200; // TO-Zuschlag
+        }
+        if (bsp > 0) {
+          minPremium += 90;  // BSP-Zuschlag
+        }
+
+        var praemie = Math.max(stepPremium, minPremium);
+        var praemieGerundet = Math.round(praemie);
+        var praemieText = praemieGerundet.toLocaleString("de-CH");
+
+        resultEl.textContent = texts[currentLang].result(praemieText);
+      });
+    });
+  </script>
+</body>
+</html>
