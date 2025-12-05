@@ -41,25 +41,17 @@
       white-space: nowrap;
     }
     .lang-btn {
-      border: 1px solid #c0c0c0;
+      border: 2px solid #C2222A;
       background: #ffffff;
-      color: #333;
-      padding: 0.25rem 0.5rem;
+      color: #C2222A;
+      padding: 0.25rem 0.65rem;
       font-size: 0.8rem;
-      border-radius: 999px;
+      border-radius: 5px;
       cursor: pointer;
       margin-left: 0.25rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-    .lang-btn span.flag {
-      font-size: 1rem;
     }
     .lang-btn.active {
-      background: #005a9c;
-      color: #ffffff;
-      border-color: #005a9c;
+      border-width: 3px;
     }
     .field {
       margin-top: 0.9rem;
@@ -71,7 +63,7 @@
       font-size: 0.9rem;
       color: #222;
     }
-    input[type="number"] {
+    input[type="number"], input[type="text"] {
       width: 100%;
       padding: 0.45rem 0.55rem;
       font-size: 0.95rem;
@@ -79,10 +71,10 @@
       border: 1px solid #c5c5c5;
       box-sizing: border-box;
     }
-    input[type="number"]:focus {
+    input[type="number"]:focus, input[type="text"]:focus {
       outline: none;
-      border-color: #005a9c;
-      box-shadow: 0 0 0 1px rgba(0,90,156,0.2);
+      border-color: #C2222A;
+      box-shadow: 0 0 0 1px rgba(194,34,42,0.25);
     }
     .button-row {
       margin-top: 1.1rem;
@@ -93,7 +85,7 @@
       border-radius: 4px;
       border: none;
       cursor: pointer;
-      background: #005a9c;
+      background: #C2222A;
       color: #ffffff;
       font-weight: 600;
     }
@@ -106,11 +98,6 @@
       min-height: 1.5rem;
       color: #222;
     }
-    .hint {
-      margin-top: 0.6rem;
-      font-size: 0.78rem;
-      color: #777;
-    }
   </style>
 </head>
 <body>
@@ -118,33 +105,26 @@
     <div class="header-row">
       <div>
         <h1 id="title">STS Prämienrechner Kundengeldabsicherung</h1>
-        <p id="subtitle">
-          Bitte geben Sie Ihre Jahresumsätze in CHF ein. Die Berechnung erfolgt ohne Gewähr.
-        </p>
+        <p id="subtitle">Bitte geben Sie Ihre Jahresumsätze in CHF ein.</p>
       </div>
       <div class="lang-switch">
-        <button id="lang-de" class="lang-btn active">
-          <span class="flag">🇩🇪</span><span>DE</span>
-        </button>
-        <button id="lang-fr" class="lang-btn">
-          <span class="flag">🇫🇷</span><span>FR</span>
-        </button>
+        <button id="lang-de" class="lang-btn active">DE</button>
+        <button id="lang-fr" class="lang-btn">FR</button>
       </div>
     </div>
-
     <div class="field">
       <label id="label-retail" for="retailUmsatz">Retail-Umsatz (CHF/Jahr)</label>
-      <input type="number" id="retailUmsatz" min="0" step="1" />
+      <input type="text" id="retailUmsatz" inputmode="numeric" />
     </div>
 
     <div class="field">
       <label id="label-to" for="toUmsatz">Tour-Operator-Umsatz (CHF/Jahr)</label>
-      <input type="number" id="toUmsatz" min="0" step="1" />
+      <input type="text" id="toUmsatz" inputmode="numeric" />
     </div>
 
     <div class="field">
       <label id="label-bsp" for="bspUmsatz">BSP-Umsatz (CHF/Jahr)</label>
-      <input type="number" id="bspUmsatz" min="0" step="1" />
+      <input type="text" id="bspUmsatz" inputmode="numeric" />
     </div>
 
     <div class="button-row">
@@ -152,115 +132,136 @@
     </div>
 
     <div id="sts-premium-result" class="result"></div>
-    <div id="hint" class="hint">
-      Formel: 0.05% Retail, 0.1% Tour Operator, 0.03% BSP; je Umsatzart mit Mindestprämien.
-    </div>
-  </div>
 
-<script>
-  window.addEventListener("DOMContentLoaded", () => {
+  </div> <!-- END container -->
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const inputIds = ["retailUmsatz", "toUmsatz", "bspUmsatz"];
+      const resultEl = document.getElementById("sts-premium-result");
 
-    const inputFields = ["retailUmsatz", "toUmsatz", "bspUmsatz"];
+      // ---- Sprachtexte ----
+      const texts = {
+        de: {
+          title: "STS Prämienrechner Kundengeldabsicherung",
+          subtitle: "Bitte geben Sie Ihre Jahresumsätze in CHF ein.",
+          retail: "Retail-Umsatz (CHF/Jahr)",
+          to: "Tour-Operator-Umsatz (CHF/Jahr)",
+          bsp: "BSP-Umsatz (CHF/Jahr)",
+          calc: "Prämie berechnen",
+          error: "Bitte geben Sie mindestens einen Umsatz ein.",
+          result: (p) => `Ihre Jahresprämie beträgt: CHF ${p}`
+        },
+        fr: {
+          title: "Calculateur de prime STS Garantie des fonds clients",
+          subtitle: "Veuillez saisir vos chiffres d’affaires annuels en CHF.",
+          retail: "Chiffre d’affaires Retail (CHF/an)",
+          to: "Chiffre d’affaires Tour-Operator (CHF/an)",
+          bsp: "Chiffre d’affaires BSP (CHF/an)",
+          calc: "Calculer la prime",
+          error: "Veuillez saisir au moins un chiffre d’affaires.",
+          result: (p) => `Votre prime annuelle est: CHF ${p}`
+        }
+      };
 
-    // ---- Tausender-Trennung ----
-    function formatNumberInput(input) {
-      let value = input.value.replace(/'/g, "").replace(/\s+/g, "");
-      if (value === "") return;
-      let num = parseFloat(value);
-      if (!isNaN(num)) {
-        input.value = num.toLocaleString("de-CH");
+      let currentLang = "de";
+
+      function updateLanguage(lang) {
+        currentLang = lang;
+        const t = texts[lang];
+
+        document.getElementById("title").textContent = t.title;
+        document.getElementById("subtitle").textContent = t.subtitle;
+        document.getElementById("label-retail").textContent = t.retail;
+        document.getElementById("label-to").textContent = t.to;
+        document.getElementById("label-bsp").textContent = t.bsp;
+        document.getElementById("sts-calc-button").textContent = t.calc;
+
+        document.getElementById("lang-de").classList.toggle("active", lang === "de");
+        document.getElementById("lang-fr").classList.toggle("active", lang === "fr");
       }
-    }
 
-    inputFields.forEach(id => {
-      const el = document.getElementById(id);
-      el.addEventListener("input", () => formatNumberInput(el));
-    });
+      document.getElementById("lang-de").addEventListener("click", () => updateLanguage("de"));
+      document.getElementById("lang-fr").addEventListener("click", () => updateLanguage("fr"));
 
-    // ---- Sprachsystem ----
-    const texts = {
-      de: {
-        title: "STS Prämienrechner Kundengeldabsicherung",
-        subtitle: "Bitte geben Sie Ihre Jahresumsätze in CHF ein.",
-        retail: "Retail-Umsatz (CHF/Jahr)",
-        to: "Tour-Operator-Umsatz (CHF/Jahr)",
-        bsp: "BSP-Umsatz (CHF/Jahr)",
-        calc: "Prämie berechnen",
-        error: "Bitte geben Sie mindestens einen Umsatz ein.",
-        result: p => `Ihre Jahresprämie beträgt: CHF ${p}`
-      },
-      fr: {
-        title: "Calculateur de prime STS Garantie des fonds clients",
-        subtitle: "Veuillez saisir vos chiffres d’affaires annuels en CHF.",
-        retail: "Chiffre d’affaires Retail (CHF/an)",
-        to: "Chiffre d’affaires Tour-Operator (CHF/an)",
-        bsp: "Chiffre d’affaires BSP (CHF/an)",
-        calc: "Calculer la prime",
-        error: "Veuillez saisir au moins un chiffre d’affaires.",
-        result: p => `Votre prime annuelle est: CHF ${p}`
+      // Start in Deutsch
+      updateLanguage("de");
+
+      // ---- Zahleneingabe mit 1'000er-Trennung ----
+      function formatInput(el) {
+        // Nur Ziffern und Apostrophe entfernen, auf Nummer reduzieren
+        let raw = el.value.replace(/[^0-9]/g, "");
+        if (raw === "") {
+          el.value = "";
+          return;
+        }
+        const num = parseInt(raw, 10);
+        if (!isNaN(num)) {
+          el.value = num.toLocaleString("de-CH");
+        }
       }
-    };
 
-    let currentLang = "de";
-    function updateLanguage(lang) {
-      currentLang = lang;
-      const t = texts[lang];
-      document.getElementById("title").textContent = t.title;
-      document.getElementById("subtitle").textContent = t.subtitle;
-      document.getElementById("label-retail").textContent = t.retail;
-      document.getElementById("label-to").textContent = t.to;
-      document.getElementById("label-bsp").textContent = t.bsp;
-      document.getElementById("sts-calc-button").textContent = t.calc;
+      inputIds.forEach((id) => {
+        const el = document.getElementById(id);
+        el.addEventListener("input", () => formatInput(el));
+        el.addEventListener("blur", () => formatInput(el));
+      });
 
-      document.getElementById("lang-de").classList.toggle("active", lang === "de");
-      document.getElementById("lang-fr").classList.toggle("active", lang === "fr");
-    }
-
-    document.getElementById("lang-de").onclick = () => updateLanguage("de");
-    document.getElementById("lang-fr").onclick = () => updateLanguage("fr");
-    updateLanguage("de"); // Standard-Deutsch
-
-    // ---- Berechnung ----
-    document.getElementById("sts-calc-button").onclick = function () {
       function parseInput(id) {
-        return parseFloat(document.getElementById(id).value.replace(/'/g, "").trim()) || 0;
+        const val = document.getElementById(id).value.replace(/'/g, "").replace(/\s+/g, "");
+        const num = parseFloat(val);
+        return isNaN(num) ? 0 : num;
       }
 
-      const retail = parseInput("retailUmsatz");
-      const to     = parseInput("toUmsatz");
-      const bsp    = parseInput("bspUmsatz");
+      // ---- Berechnung ----
+      document.getElementById("sts-calc-button").addEventListener("click", () => {
+        const retail = parseInput("retailUmsatz");
+        const to     = parseInput("toUmsatz");
+        const bsp    = parseInput("bspUmsatz");
 
-      if (retail === 0 && to === 0 && bsp === 0) {
-        resultEl.textContent = texts[currentLang].error;
-        return;
-      }
+        if (retail === 0 && to === 0 && bsp === 0) {
+          resultEl.textContent = texts[currentLang].error;
+          return;
+        }
 
-      let stepPremium = 0;
+        let stepPremium = 0;
 
-      if (retail > 0) {
-        stepPremium += Math.max(780, retail * 0.0005);
-      }
-      if (to > 0) {
-        stepPremium += Math.max(200, to * 0.001);
-      }
-      if (bsp > 0) {
-        stepPremium += Math.max(90, bsp * 0.0003);
-      }
+        // 1. Retail-Komponente: max(780, 0.05% * Retail), falls Retail > 0
+        if (retail > 0) {
+          const retailVar = retail * 0.0005; // 0.05%
+          stepPremium += Math.max(780, retailVar);
+        }
 
-      let minPremium = 0;
-      if (retail > 0 || to > 0 || bsp > 0) minPremium += 780;
-      if (to > 0) minPremium += 200;
-      if (bsp > 0) minPremium += 90;
+        // 2. TO-Komponente: max(200, 0.1% * TO), falls TO > 0
+        if (to > 0) {
+          const toVar = to * 0.001; // 0.1%
+          stepPremium += Math.max(200, toVar);
+        }
 
-      let praemie = Math.max(stepPremium, minPremium);
-      praemie = Math.round(praemie);
+        // 3. BSP-Komponente: max(90, 0.03% * BSP), falls BSP > 0
+        if (bsp > 0) {
+          const bspVar = bsp * 0.0003; // 0.03%
+          stepPremium += Math.max(90, bspVar);
+        }
 
-      document.getElementById("sts-premium-result").textContent =
-        texts[currentLang].result(praemie.toLocaleString("de-CH"));
-    };
+        // 4. Gesamt-Mindestprämie (Retail-Basis immer, sobald irgendein Umsatz; TO/BSP-Zuschläge)
+        let minPremium = 0;
+        if (retail > 0 || to > 0 || bsp > 0) {
+          minPremium += 780; // Basis-Retail-Mindestprämie
+        }
+        if (to > 0) {
+          minPremium += 200; // TO-Zuschlag
+        }
+        if (bsp > 0) {
+          minPremium += 90;  // BSP-Zuschlag
+        }
 
-  });
-</script>
+        const praemie = Math.max(stepPremium, minPremium);
+        const praemieGerundet = Math.round(praemie);
+        const praemieText = praemieGerundet.toLocaleString("de-CH");
+
+        resultEl.textContent = texts[currentLang].result(praemieText);
+      });
+    });
+  </script>
 </body>
 </html>
-
