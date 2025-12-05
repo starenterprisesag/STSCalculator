@@ -67,9 +67,16 @@
   opacity: 0.85;
 }
     }
-    .field {
-      margin-top: 0.9rem;
-    }
+    /* schon vorhanden: */
+.field {
+  margin-top: 0.9rem;
+}
+
+/* NEU dazu: mehr Abstand zwischen den Feldern */
+.field + .field {
+  margin-top: 1.4rem; /* nach Bedarf anpassen: 1.2–1.6 */
+}
+
     label {
       display: block;
       font-weight: 600;
@@ -279,5 +286,6 @@
   </script>
 </body>
 </html>
+
 
 
