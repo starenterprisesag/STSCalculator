@@ -41,17 +41,27 @@
       white-space: nowrap;
     }
     .lang-btn {
-      border: 2px solid #C2222A;
-      background: #ffffff;
-      color: #C2222A;
-      padding: 0.25rem 0.65rem;
-      font-size: 0.8rem;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-left: 0.25rem;
-    }
-    .lang-btn.active {
-      border-width: 3px;
+  border: none;
+  background: #c2222a;
+  color: #ffffff;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.85rem;
+  border-radius: 15px;
+  cursor: pointer;
+  margin-left: 0.4rem;
+  transition: 0.15s ease-in-out;
+  opacity: 0.5;
+}
+
+.lang-btn.active {
+  opacity: 1;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px rgba(194,34,42,0.35);
+}
+
+.lang-btn:hover {
+  opacity: 0.85;
+}
     }
     .field {
       margin-top: 0.9rem;
@@ -265,3 +275,4 @@
   </script>
 </body>
 </html>
+
